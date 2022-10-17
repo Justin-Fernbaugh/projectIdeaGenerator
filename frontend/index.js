@@ -30,7 +30,7 @@ let res = prompt("$ ");
 				if 
 					(isNumeric(res)) console.log(await getIdea("nogenre", res));
 				else 
-					console.log("err handle");
+					console.log("Error: Invalid input try again ");
 				break;
 		}
 		console.log("Would you like to see another idea? (Y/N) ");
