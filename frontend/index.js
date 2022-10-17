@@ -10,12 +10,22 @@ const API_URL = process.env.API_URL;
 
 app.use(express.json());
 
+console.log('-----------------------------------------')
 console.log("Welcome to the project idea generator! ");
-console.log("If you would like to see multiple ideas enter an integer");
-console.log("Other wise, would you like to generate an idea? (Y/N) ");
+console.log('-----------------------------------------')
+console.log('\n\n');
+
+console.log('-----------------------------------------')
+console.log("1. If you would like to see multiple ideas enter a number\n");
+console.log("2. Other wise, enter (Y/N) to generate single idea. ");
+console.log('----------------------------------------- \n')
+
+console.log("Would you like to generate an idea? (Y/N)");
 
 let run = true;
 let res = prompt("$ ");
+if(res.toLowerCase() == 'n') run = false;
+
 (async () => {
 	while (run) {
 		switch (res.toLowerCase()) {
@@ -27,9 +37,14 @@ let res = prompt("$ ");
 				run = !run;
 				break;
 			default:
-				if 
-					(isNumeric(res)) console.log(await getIdea("nogenre", res));
-				else 
+				if (isNumeric(res)) {
+					if(res > 5) {
+						console.log(`Are you sure you want to generate ${res} ideas? (Y/N)`);
+						let howSure = prompt("$ ");
+						if(howSure.toLowerCase() == 'n') continue;
+					}
+					console.log(await getIdea("nogenre", res));
+				} else 
 					console.log("Error: Invalid input try again ");
 				break;
 		}
