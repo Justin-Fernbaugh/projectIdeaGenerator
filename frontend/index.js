@@ -17,6 +17,7 @@ console.log('\n\n');
 
 console.log('-----------------------------------------')
 console.log("1. If you would like to see multiple ideas enter a number\n");
+console.log("1. To see in-progress ideas press p\n");
 console.log("2. Other wise, enter (Y/N) to generate single idea. ");
 console.log('----------------------------------------- \n')
 
@@ -30,11 +31,17 @@ if(res.toLowerCase() == 'n') run = false;
 	while (run) {
 		switch (res.toLowerCase()) {
 			case "y":
-				console.log(await getIdea("nogenre", 1));
+				await printIdeas(1, "");
 				break;
 			case "n":
 				console.log("Okay see you later! ");
 				run = !run;
+				break;
+			case "p":
+				console.log('The following ideas are currently in progress: ');
+				const inProgress = await getInProgress(5);
+				for(let i = 0; i < inProgress.length; i++)
+					console.log(`${i}. ${inProgress[i]}`);
 				break;
 			default:
 				if (isNumeric(res)) {
@@ -43,7 +50,7 @@ if(res.toLowerCase() == 'n') run = false;
 						let howSure = prompt("$ ");
 						if(howSure.toLowerCase() == 'n') continue;
 					}
-					console.log(await getIdea("nogenre", res));
+					await printIdeas(res, "nogenre");
 				} else 
 					console.log("Error: Invalid input try again ");
 				break;
@@ -54,12 +61,58 @@ if(res.toLowerCase() == 'n') run = false;
 	}
 })();
 
+async function printIdeas(limit, genre) {
+	const ideas = await getIdea(genre, limit)
+	for(i = 0; i < ideas.length; i++) {
+		console.log(`${i}.  Alright hear me out ... ${ideas[i]}`);
+	}
+	checkSave(ideas);
+	return;
+}
+
+async function checkSave(ideas) {
+	console.log('\nDo you want to start idea as in-progress? ');
+	console.log('Select idea with number or multiple separated by commas or N for no.')
+	let idx = prompt("$ ");
+
+	if(idx.toLowerCase() == "n") return;
+	
+	//Check if input is integer && greater than idea length
+	if(!isNumeric(idx) || idx > ideas.length ) {
+		console.log('Invalid input');
+		return;
+	}
+	
+	idx = [idx];
+	let save = [];
+	for(let i = 0; i < idx.length; i++)
+		save.push({"idea": ideas[i], "inProgress": true});
+
+	const res = await axios({
+		method: "post",
+		url: API_URL + "/save",
+		data: save,
+	});
+}
+
 async function getIdea(genre, howMany) {
 	const res = await axios({
 		method: "get",
-		url: API_URL + "/idea",
+		url: API_URL + "/ideas",
 		params: {
 			limit: howMany,
+		},
+	});
+
+	return res.data;
+}
+
+async function getInProgress(limit) {
+	const res = await axios({
+		method: "get",
+		url: API_URL + "/save",
+		params: {
+			limit: limit,
 		},
 	});
 
