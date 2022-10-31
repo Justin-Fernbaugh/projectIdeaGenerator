@@ -1,8 +1,6 @@
 # projectIdeaGenerator
 
-Clear instructions for how to REQUEST data from the microservice you implemented. Include an example call.
-Clear instructions for how to RECEIVE data from the microservice you implemented
-UML sequence diagram showing how requesting and receiving data work. Make it detailed enough that your partner (and your grader) will understand
+This is a project used to generate more project ideas. The API for the app is described below which is utilized by the frontend/client. The API communicates utilizing HTTP CRUD operations.
 
 # GET
 - /
