@@ -35,6 +35,7 @@ app.get("/ideas", async (req, res) => {
 	for(let i = 0; i < ideas.length; i++)
 		ideas[i] = ideas[i].idea;
 
+	console.log('GET /ideas: ', ideas);
 	res.send(ideas);
 });
 
@@ -64,6 +65,7 @@ app.post("/save", async (req, res) => {
 		modifiedCount += response.modifiedCount;
 	}
 
+	console.log('POST /save: ', modifiedCount);
 	res.send({"modifiedCount": modifiedCount});
 });
 
