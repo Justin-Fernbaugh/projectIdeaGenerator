@@ -1,6 +1,7 @@
 require("dotenv").config();
 const fs = require("fs");
 const mongoose = require('mongoose');
+const axios = require("axios");
 const prompt = require("prompt-sync")();
 const AllIdeas = require("./models/ideasSchema");
 const express = require("express");
@@ -12,6 +13,7 @@ const PORT = process.env.PORT || 4000;
 app.use(express.json());
 
 let savedIdeas = [];
+const PARTNER_API = "https://portfolio.tincaniam.com/projects"
 
 mongoose.connect(`mongodb+srv://root:${process.env.PASSWORD}@cluster0.nu5wqgm.mongodb.net/IdeaGenerator?retryWrites=true&w=majority`, {
    useNewUrlParser: true,
@@ -42,14 +44,20 @@ app.get("/ideas", async (req, res) => {
 //Takes param limit && returns array of inProgress ideas
 app.get("/save", async (req, res) => {
 	const { limit } = req.query;
+	let retIdeas = [];
 
-	const ideas = await AllIdeas.find({"inProgress": true}).select("idea -_id").limit(limit);
+	const ideas = await axios({
+		method: "get",
+		url: PARTNER_API + "/",
+	});
 
-	for(let i = 0; i < ideas.length; i++)
-		ideas[i] = ideas[i].idea;
+	for(let i=0; i < ideas.data.length; i++) {
+		if(ideas.data[i].status == "In Progress")
+			retIdeas.push(ideas.data[i].description);
+	}
 
-	console.log('GET /save: ', ideas);
-	res.send(ideas);
+	console.log('GET /save: ', retIdeas);
+	res.send(retIdeas);
 });
 
 //takes an array of objects with two values idea(String) && inProgress(Boolean)
