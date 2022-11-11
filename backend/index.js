@@ -65,15 +65,25 @@ app.post("/save", async (req, res) => {
 	const ideas = req.body;
 	console.log("Saving: ", ideas);
 
+	let projRes;
 	let modifiedCount = 0;
-	for(let i = 0; i < ideas.length; i++) {
-		const response = await AllIdeas.updateOne({"idea": ideas[i].idea},
-			{ "inProgress": ideas[i].inProgress }
-		);
-		modifiedCount += response.modifiedCount;
+	for(let i=0; i < ideas.length; i++) {
+		const project = {
+			name: ideas[i].idea, 
+			status: "In Progress", 
+			description: ideas[i].idea, 
+			date: "11-11-22"
+		};
+
+		projRes = await axios({
+			method: "post",
+			url: PARTNER_API + "/",
+			data: project,
+		});
+		console.log(`POST /save: ${project} with status ${projRes.status}`);
+		modifiedCount++;
 	}
 
-	console.log('POST /save: ', modifiedCount);
 	res.send({"modifiedCount": modifiedCount});
 });
 
