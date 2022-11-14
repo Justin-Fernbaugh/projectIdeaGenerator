@@ -6,6 +6,7 @@ const prompt = require("prompt-sync")();
 const AllIdeas = require("./models/ideasSchema");
 const express = require("express");
 const { resolve4 } = require("dns/promises");
+const { format } = require("path");
 const app = express();
 
 const PORT = process.env.PORT || 4000;
@@ -67,12 +68,23 @@ app.post("/save", async (req, res) => {
 
 	let projRes;
 	let modifiedCount = 0;
+	
+	//get today's date in mm-dd-yy format
+	const today = new Date();
+	const yy = today.getFullYear().toString().slice(2);
+	let mm = today.getMonth() + 1; // Months start at 0!
+	let dd = today.getDate();
+	if (dd < 10) dd = '0' + dd;
+	if (mm < 10) mm = '0' + mm;
+	const formattedToday = `${mm}-${dd}-${yy}`;
+	console.log('format date: ', formattedToday);
+
 	for(let i=0; i < ideas.length; i++) {
 		const project = {
 			name: ideas[i].idea, 
 			status: "In Progress", 
 			description: ideas[i].idea, 
-			date: "11-11-22"
+			date: formattedToday
 		};
 
 		projRes = await axios({
@@ -80,7 +92,7 @@ app.post("/save", async (req, res) => {
 			url: PARTNER_API + "/",
 			data: project,
 		});
-		console.log(`POST /save: ${project} with status ${projRes.status}`);
+		console.log(`POST /save: \n ${project.description} \n ${project.date} \nwith status ${projRes.status}`);
 		modifiedCount++;
 	}
 
