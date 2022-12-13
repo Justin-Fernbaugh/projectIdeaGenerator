@@ -18,11 +18,13 @@ console.log('\n\n');
 console.log('-----------------------------------------')
 console.log("1. If you would like to see multiple ideas enter a number\n");
 console.log("1. To see in-progress ideas press p\n");
+console.log("1. To view ideas by genre select g\n");
 console.log("2. Other wise, enter (Y/N) to generate single idea. ");
 console.log('----------------------------------------- \n')
 
-console.log("Would you like to generate an idea? (Y/N)");
+console.log("Would you like to generate a single idea? (Y/N)");
 
+let cachedIdeas = [];
 let run = true;
 let res = prompt("$ ");
 if(res.toLowerCase() == 'n') run = false;
@@ -43,6 +45,14 @@ if(res.toLowerCase() == 'n') run = false;
 				for(let i = 0; i < inProgress.length; i++)
 					console.log(`${i}. ${inProgress[i]}`);
 				break;
+			case "g":
+				const genres = await getGenres();
+				for(let i = 0; i < genres.length; i++)
+					console.log(`${i}. ${genres[i]}`);
+
+				const idx = selectGenre(genres);
+				await printIdeas(0, genres[idx]);
+				break;
 			default:
 				if (isNumeric(res)) {
 					if(res > 5) {
@@ -50,7 +60,7 @@ if(res.toLowerCase() == 'n') run = false;
 						let howSure = prompt("$ ");
 						if(howSure.toLowerCase() == 'n') continue;
 					}
-					await printIdeas(res, "nogenre");
+					await printIdeas(res, "");
 				} else 
 					console.log("Error: Invalid input try again ");
 				break;
@@ -62,12 +72,21 @@ if(res.toLowerCase() == 'n') run = false;
 })();
 
 async function printIdeas(limit, genre) {
-	const ideas = await getIdea(genre, limit)
+
+	const ideas = await getIdea(genre, 0);
+
+	let k = 0;
 	for(i = 0; i < ideas.length; i++) {
+		if(k >= limit) break;
+		if(cachedIdeas.includes(ideas[i])) continue;
+
 		console.log(`${i}.  Alright hear me out ... ${ideas[i]}`);
+
+		cachedIdeas.push(ideas[i]);
+		k++;
 	}
 	checkSave(ideas);
-	return;
+	return 201;
 }
 
 async function checkSave(ideas) {
@@ -94,13 +113,30 @@ async function checkSave(ideas) {
 		data: save,
 	});
 }
+function selectGenre(genres) {
+	console.log("Select genre by number or N to cancel ");
 
-async function getIdea(genre, howMany) {
+	let idx = prompt("$ ");
+	if(idx.toLowerCase() == "n") return;
+
+	//Check if input is integer && greater than idea length
+	if(!isNumeric(idx) || idx > genres.length ) {
+		console.log('Invalid input');
+		return;
+	}
+
+	return idx;
+}
+
+async function getIdea(genre, limit) {
+	if(!limit) limit = 0;
+
 	const res = await axios({
 		method: "get",
 		url: API_URL + "/ideas",
 		params: {
-			limit: howMany,
+			limit: limit,
+			genre: genre
 		},
 	});
 
@@ -119,6 +155,19 @@ async function getInProgress(limit) {
 	return res.data;
 }
 
+async function getGenres(limit) {
+	if(!limit) limit = 0;
+	const res = await axios({
+		method: "get",
+		url: API_URL + "/genres",
+		params: {
+			limit: limit,
+		},
+	});
+
+	return res.data;
+}
+
 function isNumeric(str) {
 	if (typeof str != "string") return false; // we only process strings!
 	return (
@@ -126,3 +175,9 @@ function isNumeric(str) {
 		!isNaN(parseFloat(str))
 	); // ...and ensure strings of whitespace fail
 }
+
+function sleep(ms) {
+	return new Promise((resolve) => {
+	  setTimeout(resolve, ms);
+	});
+  }
