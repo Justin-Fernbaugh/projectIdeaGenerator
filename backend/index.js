@@ -26,14 +26,30 @@ app.get("/", (req, res) => {
 	res.send("App is healthy");
 });
 
+app.get('/genres', async (req, res) => {
+	const { limit } = req.query;
+
+	let genres = await AllIdeas.find().select("genre -_id").limit(limit);
+
+	for(let i = 0; i < genres.length; i++)
+		genres[i] = genres[i].genre;
+
+	console.log('GET /genres: ', genres);
+
+	res.send(genres);
+});
+
 //Takes params limit(Integer), genre(String) && returns array of ideas
 app.get("/ideas", async (req, res) => {
 	const { limit, genre } = req.query;
+	console.log(`params: ${limit}, ${genre}`);
+	
 	let ideas;
 	if(!genre)
 		ideas = await AllIdeas.find({}).select("idea -_id").limit(limit);
 	else
 		ideas = await AllIdeas.find({"genre": genre}).select("idea -_id").limit(limit);
+	console.log('returned ideas: ', ideas);
 
 	for(let i = 0; i < ideas.length; i++)
 		ideas[i] = ideas[i].idea;
